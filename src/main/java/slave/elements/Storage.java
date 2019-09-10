@@ -103,36 +103,48 @@ public class Storage {
             FileWriter fw = new FileWriter(this.file, true);
             switch (task.getType()) {
             case TODO:
-                fw.write(task.getId() + " ~ "
-                        + "ToDo" + " ~ "
-                        + task.getStatusIcon() + " ~ "
-                        + task.getDescription()
-                        + System.lineSeparator());
-                fw.close();
+                writeToDo(task, fw);
                 break;
             case DEADLINE:
-                fw.write(task.getId() + " ~ "
-                        + "Deadline" + " ~ "
-                        + task.getStatusIcon() + " ~ "
-                        + task.getDescription() + " ~ "
-                        + task.getDate()
-                        + System.lineSeparator());
-                fw.close();
+                writeDeadline(task, fw);
                 break;
             case EVENT:
-                fw.write(task.getId() + " ~ "
-                        + "Event" + " ~ "
-                        + task.getStatusIcon() + " ~ "
-                        + task.getDescription() + " ~ "
-                        + task.getDate()
-                        + System.lineSeparator());
-                fw.close();
+                writeEvent(task, fw);
                 break;
             default:
             }
         } catch (IOException error) {
             throw new InOutWentWrongException();
         }
+    }
+
+    private void writeEvent(Task task, FileWriter fw) throws IOException {
+        fw.write(task.getId() + " ~ "
+                + "Event" + " ~ "
+                + task.getStatusIcon() + " ~ "
+                + task.getDescription() + " ~ "
+                + task.getDate()
+                + System.lineSeparator());
+        fw.close();
+    }
+
+    private void writeDeadline(Task task, FileWriter fw) throws IOException {
+        fw.write(task.getId() + " ~ "
+                + "Deadline" + " ~ "
+                + task.getStatusIcon() + " ~ "
+                + task.getDescription() + " ~ "
+                + task.getDate()
+                + System.lineSeparator());
+        fw.close();
+    }
+
+    private void writeToDo(Task task, FileWriter fw) throws IOException {
+        fw.write(task.getId() + " ~ "
+                + "ToDo" + " ~ "
+                + task.getStatusIcon() + " ~ "
+                + task.getDescription()
+                + System.lineSeparator());
+        fw.close();
     }
 
     /**
@@ -149,25 +161,37 @@ public class Storage {
         String[] tokens = line.split(" ~ ");
         switch (tokens[1]) {
         case "ToDo":
-            ToDo toDoTask = new ToDo(tokens[3], Integer.parseInt(tokens[0]));
-            if (tokens[2].equals("Done")) {
-                toDoTask.setDone();
-            }
-            return toDoTask;
+            return formatToDo(tokens);
         case "Deadline":
-            Deadline deadlineTask = new Deadline(tokens[3], Integer.parseInt(tokens[0]), tokens[4]);
-            if (tokens[2].equals("Done")) {
-                deadlineTask.setDone();
-            }
-            return deadlineTask;
+            return formatDeadline(tokens);
         case "Event":
-            Event eventTask = new Event(tokens[3], Integer.parseInt(tokens[0]), tokens[4]);
-            if (tokens[2].equals("Done")) {
-                eventTask.setDone();
-            }
-            return eventTask;
+            return formatEvent(tokens);
         default:
-            throw new UnableToReadFileException(index);
+        throw new UnableToReadFileException(index);
         }
+    }
+
+    private Task formatEvent(String[] tokens) {
+        Event eventTask = new Event(tokens[3], Integer.parseInt(tokens[0]), tokens[4]);
+        if (tokens[2].equals("Done")) {
+            eventTask.setDone();
+        }
+        return eventTask;
+    }
+
+    private Task formatDeadline(String[] tokens) {
+        Deadline deadlineTask = new Deadline(tokens[3], Integer.parseInt(tokens[0]), tokens[4]);
+        if (tokens[2].equals("Done")) {
+            deadlineTask.setDone();
+        }
+        return deadlineTask;
+    }
+
+    private Task formatToDo(String[] tokens) {
+        ToDo toDoTask = new ToDo(tokens[3], Integer.parseInt(tokens[0]));
+        if (tokens[2].equals("Done")) {
+            toDoTask.setDone();
+        }
+        return toDoTask;
     }
 }

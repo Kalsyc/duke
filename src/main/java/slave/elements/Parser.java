@@ -58,27 +58,34 @@ public class Parser {
             String[] deadlineSplitByTokens = fullCommand.split(" /by ");
             String deadlineDesc = deadlineSplitByTokens[0].substring(9);
             String deadlineDate = deadlineSplitByTokens[deadlineSplitByTokens.length - 1];
-
-            if (isDate(deadlineDate)) {
-                String[] dateSplitTokens = deadlineDate.split(" ");
-                Date validDeadlineDate = new Date(dateSplitTokens[0], dateSplitTokens[1]);
-                return new AddDeadlineCommand(deadlineDesc, validDeadlineDate);
-            }
-            return new AddDeadlineCommand(deadlineDesc, deadlineDate);
+            return getValidDeadlineCommand(deadlineDesc, deadlineDate);
         case "event":
             checkValidity("event", fullCommand, tokens);
             String[] eventSplitByTokens = fullCommand.split(" /at ");
             String eventDesc = eventSplitByTokens[0].substring(6);
             String eventDate = eventSplitByTokens[eventSplitByTokens.length - 1];
-            if (isDate(eventDate)) {
-                String[] eventSplitTokens = eventDate.split(" ");
-                Date validEventDate = new Date(eventSplitTokens[0], eventSplitTokens[1]);
-                return new AddEventCommand(eventDesc, validEventDate);
-            }
-            return new AddEventCommand(eventDesc, eventDate);
+            return getValidEventCommand(eventDesc, eventDate);
         default:
             return new NullCommand(firstWord);
         }
+    }
+
+    private static Command getValidEventCommand(String eventDesc, String eventDate) throws DukeException {
+        if (isDate(eventDate)) {
+            String[] eventSplitTokens = eventDate.split(" ");
+            Date validEventDate = new Date(eventSplitTokens[0], eventSplitTokens[1]);
+            return new AddEventCommand(eventDesc, validEventDate);
+        }
+        return new AddEventCommand(eventDesc, eventDate);
+    }
+
+    private static Command getValidDeadlineCommand(String deadlineDesc, String deadlineDate) throws DukeException {
+        if (isDate(deadlineDate)) {
+            String[] dateSplitTokens = deadlineDate.split(" ");
+            Date validDeadlineDate = new Date(dateSplitTokens[0], dateSplitTokens[1]);
+            return new AddDeadlineCommand(deadlineDesc, validDeadlineDate);
+        }
+        return new AddDeadlineCommand(deadlineDesc, deadlineDate);
     }
 
     /**
@@ -109,31 +116,47 @@ public class Parser {
     private static void checkValidity(String check, String input, String[] tokens) throws DukeException {
         switch (check) {
         case "deadline":
-            if (tokens.length <= 1) {
-                throw new MissingDescriptionException();
-            } else if (!input.contains(" /by ")) {
-                throw new MissingDateException();
-            }
+            checkDeadline(input, tokens);
             return;
         case "event":
-            if (tokens.length <= 1) {
-                throw new MissingDescriptionException();
-            } else if (!input.contains(" /at ")) {
-                throw new MissingDateException();
-            }
+            checkEvent(input, tokens);
             return;
         case "todo":
-            if (tokens.length <= 1) {
-                throw new MissingDescriptionException();
-            }
+            checkToDo(tokens);
             return;
         case "done":
         case "delete":
-            if (tokens.length <= 1) {
-                throw new MissingTaskException();
-            }
+            checkDoneDelete(tokens);
             return;
-        default:
+            default:
+        }
+    }
+
+    private static void checkDoneDelete(String[] tokens) throws MissingTaskException {
+        if (tokens.length <= 1) {
+            throw new MissingTaskException();
+        }
+    }
+
+    private static void checkToDo(String[] tokens) throws MissingDescriptionException {
+        if (tokens.length <= 1) {
+            throw new MissingDescriptionException();
+        }
+    }
+
+    private static void checkEvent(String input, String[] tokens) throws MissingDescriptionException, MissingDateException {
+        if (tokens.length <= 1) {
+            throw new MissingDescriptionException();
+        } else if (!input.contains(" /at ")) {
+            throw new MissingDateException();
+        }
+    }
+
+    private static void checkDeadline(String input, String[] tokens) throws MissingDescriptionException, MissingDateException {
+        if (tokens.length <= 1) {
+            throw new MissingDescriptionException();
+        } else if (!input.contains(" /by ")) {
+            throw new MissingDateException();
         }
     }
 }

@@ -54,25 +54,32 @@ public class Date {
      */
     private void format() throws DukeException {
         try {
-            String[] splitDateTimeTokens = this.dateFormat.split("/");
-
-            this.day = Integer.parseInt(splitDateTimeTokens[0]);
-            this.month = Integer.parseInt(splitDateTimeTokens[1]);
-            this.year = Integer.parseInt(splitDateTimeTokens[2]);
-
-            assert this.month <= 12 : "Invalid Month";
-            assert this.day <= 31 : "Invalid Day";
-
-            String hour = time.substring(0, 2);
-            String minute = time.substring(2);
-
-            int indexHour = Integer.parseInt(hour);
-            assert indexHour <= 23 : "Invalid index for Hour and Time";
-            this.timeFormat = timeHourSuffixes[indexHour] + "." + minute + timeSuffixes[indexHour];
-
+            formatDayMonthYear();
+            formatHourMinute();
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new InvalidDateException();
         }
+    }
+
+    private void formatHourMinute() {
+        String hour = time.substring(0, 2);
+        String minute = time.substring(2);
+
+        int indexHour = Integer.parseInt(hour);
+        assert indexHour <= 23 : "Invalid index for Hour and Time";
+
+        this.timeFormat = timeHourSuffixes[indexHour] + "." + minute + timeSuffixes[indexHour];
+    }
+
+    private void formatDayMonthYear() {
+        String[] splitDateTimeTokens = this.dateFormat.split("/");
+
+        this.day = Integer.parseInt(splitDateTimeTokens[0]);
+        this.month = Integer.parseInt(splitDateTimeTokens[1]);
+        this.year = Integer.parseInt(splitDateTimeTokens[2]);
+
+        assert this.month <= 12 : "Invalid Month";
+        assert this.day <= 31 : "Invalid Day";
     }
 
     /**
