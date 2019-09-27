@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.io.FileWriter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import java.nio.file.Files;
@@ -97,7 +98,6 @@ public class Storage {
      * @param task Task to store in .txt file.
      * @throws KappaException Throws if input went wrong in writing file.
      */
-
     void addTask(Task task) throws KappaException {
         try {
             FileWriter fw = new FileWriter(this.file, true);
@@ -118,6 +118,13 @@ public class Storage {
         }
     }
 
+    /**
+     * Writes event to file to store.
+     *
+     * @param task Task.
+     * @param fw FileWriter object.
+     * @throws IOException Throws if unable to write or close.
+     */
     private void writeEvent(Task task, FileWriter fw) throws IOException {
         fw.write(task.getId() + " ~ "
                 + "Event" + " ~ "
@@ -129,6 +136,13 @@ public class Storage {
         fw.close();
     }
 
+    /**
+     * Writes deadline to file to store.
+     *
+     * @param task Task.
+     * @param fw FileWriter object.
+     * @throws IOException Throws if unable to write or close.
+     */
     private void writeDeadline(Task task, FileWriter fw) throws IOException {
         fw.write(task.getId() + " ~ "
                 + "Deadline" + " ~ "
@@ -140,6 +154,13 @@ public class Storage {
         fw.close();
     }
 
+    /**
+     * Writes ToDo to file to store.
+     *
+     * @param task Task.
+     * @param fw FileWriter object.
+     * @throws IOException Throws if unable to write or close.
+     */
     private void writeToDo(Task task, FileWriter fw) throws IOException {
         fw.write(task.getId() + " ~ "
                 + "ToDo" + " ~ "
@@ -159,7 +180,6 @@ public class Storage {
      * @return Task that has been parsed.
      * @throws KappaException Throws error in reading file.
      */
-
     private Task formatFileToTask(String line, int index) throws KappaException {
         String[] tokens = line.split(" ~ ");
         switch (tokens[1]) {
@@ -174,6 +194,12 @@ public class Storage {
         }
     }
 
+    /**
+     * Formats Event properly from storage.
+     *
+     * @param tokens Storage data split by ~.
+     * @return Event from storage.
+     */
     private Task formatEvent(String[] tokens) {
         Tags tags;
         if (tokens.length == 6) {
@@ -188,6 +214,12 @@ public class Storage {
         return eventTask;
     }
 
+    /**
+     * Formats Deadline properly from storage.
+     *
+     * @param tokens Storage data split by ~.
+     * @return Deadline from storage.
+     */
     private Task formatDeadline(String[] tokens) {
         Tags tags;
         if (tokens.length == 6) {
@@ -202,6 +234,12 @@ public class Storage {
         return deadlineTask;
     }
 
+    /**
+     * Formats ToDo properly from storage.
+     *
+     * @param tokens Storage data split by ~.
+     * @return ToDo from storage.
+     */
     private Task formatToDo(String[] tokens) {
         Tags tags;
         if (tokens.length == 5) {
@@ -216,12 +254,15 @@ public class Storage {
         return toDoTask;
     }
 
+    /**
+     * Formats Tags properly from storage for a specific task.
+     *
+     * @param tagsString tags data from Storage.
+     * @return Tags from storage associated with a specific task.
+     */
     private Tags formatTags(String tagsString) {
         String[] splitByHash = tagsString.split("#");
-        List<String> tagsList = new ArrayList<>();
-        for (int i = 1; i < splitByHash.length; i++) {
-            tagsList.add(splitByHash[i]);
-        }
+        List<String> tagsList = new ArrayList<>(Arrays.asList(splitByHash).subList(1, splitByHash.length));
         return new Tags(tagsList);
 
     }

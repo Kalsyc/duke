@@ -13,13 +13,13 @@ import kappa.command.Command;
 import kappa.command.AddDeadlineCommand;
 import kappa.command.FindCommand;
 
-import kappa.exception.KappaException;
-import kappa.exception.MissingDateException;
-import kappa.exception.MissingDescriptionException;
-import kappa.exception.MissingTaskException;
+import kappa.exception.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A parser to take in input by user and returns the appropriate command.
@@ -55,18 +55,18 @@ public class Parser {
             return new DeleteCommand(Integer.parseInt(tokens[1]));
         case "todo":
             String[] splitByTagToDo = fullCommand.split("/t");
-            checkValidity("todo", splitByTagToDo[0], tokens);
+            checkValidity("todo", splitByTagToDo[0], splitByTagToDo[0].split(" "));
             return new AddToDoCommand(splitByTagToDo[0].substring(5), parseTags(splitByTagToDo));
         case "deadline":
             String[] splitByTagDeadline = fullCommand.split("/t");
-            checkValidity("deadline", splitByTagDeadline[0], tokens);
-            String[] deadlineSplitByTokens = splitByTagDeadline[0].split(" /by ");
+            checkValidity("deadline", splitByTagDeadline[0].trim(), splitByTagDeadline[0].split(" "));
+            String[] deadlineSplitByTokens = splitByTagDeadline[0].trim().split(" /by ");
             String deadlineDesc = deadlineSplitByTokens[0].substring(9);
             String deadlineDate = deadlineSplitByTokens[deadlineSplitByTokens.length - 1];
             return getValidDeadlineCommand(deadlineDesc, deadlineDate, parseTags(splitByTagDeadline));
         case "event":
             String[] splitByTagEvent = fullCommand.split("/t");
-            checkValidity("event", splitByTagEvent[0], tokens);
+            checkValidity("event", splitByTagEvent[0], splitByTagEvent[0].split(" "));
             String[] eventSplitByTokens = splitByTagEvent[0].split(" /at ");
             String eventDesc = eventSplitByTokens[0].substring(6);
             String eventDate = eventSplitByTokens[eventSplitByTokens.length - 1];
@@ -76,19 +76,38 @@ public class Parser {
         }
     }
 
-    private static Tags parseTags(String[] command) {
+    /**
+     * Parses tags to the correct format and returns a Tags object.
+     *
+     * @param command Command given by user input.
+     * @return Tags object containing tags from command.
+     */
+    private static Tags parseTags(String[] command) throws InvalidTagException {
         if (command.length < 2) {
             return new Tags();
         } else {
             String[] splitByHash = command[1].trim().split("#");
-            List<String> tagsList = new ArrayList<>();
-            for (int i = 1; i < splitByHash.length; i++){
-                tagsList.add(splitByHash[i]);
+            if (splitByHash.length == 0) {
+                throw new InvalidTagException();
             }
+
+            List<String> tagsList = new ArrayList<>(Stream.of(splitByHash)
+                    .map(s -> s.trim())
+                    .collect(Collectors.toList())
+                    .subList(1, splitByHash.length));
             return new Tags(tagsList);
         }
     }
 
+    /**
+     * Retrieves a valid event command from the raw user input.
+     *
+     * @param eventDesc Event Description.
+     * @param eventDate Date Description.
+     * @param tags Tags.
+     * @return Valid AddEventCommand.
+     * @throws KappaException Throws if Event Command is not valid.
+     */
     private static Command getValidEventCommand(String eventDesc, String eventDate, Tags tags) throws KappaException {
         if (isDate(eventDate)) {
             String[] eventSplitTokens = eventDate.split(" ");
@@ -98,6 +117,15 @@ public class Parser {
         return new AddEventCommand(eventDesc, eventDate, tags);
     }
 
+    /**
+     * Retrieves a valid deadline command from the raw user input.
+     *
+     * @param deadlineDesc Deadline Description.
+     * @param deadlineDate Date Description.
+     * @param tags Tags.
+     * @return Valid AddDeadlineCommand.
+     * @throws KappaException Throws if Deadline Command is not valid.
+     */
     private static Command getValidDeadlineCommand(String deadlineDesc, String deadlineDate, Tags tags) throws KappaException {
         if (isDate(deadlineDate)) {
             String[] dateSplitTokens = deadlineDate.split(" ");
@@ -108,7 +136,7 @@ public class Parser {
     }
 
     /**
-     * Checks if it is a proper date in the form DD/MM/YYYY HHMM.
+     * Checks if date is a proper date in the form DD/MM/YYYY HHMM.
      *
      * @param dateDescription Date description.
      * @return True or false depending on the validity of the date description in that form.
@@ -151,18 +179,38 @@ public class Parser {
         }
     }
 
+    /**
+     * Checks Done and Delete commands to see if the index is missing.
+     *
+     * @param tokens User input command split by spaces.
+     * @throws MissingTaskException Throws if index is missing.
+     */
     private static void checkDoneDelete(String[] tokens) throws MissingTaskException {
         if (tokens.length <= 1) {
             throw new MissingTaskException();
         }
     }
 
+    /**
+     * Checks ToDo Command to see if description is missing.
+     *
+     * @param tokens User input command split by spaces.
+     * @throws MissingDescriptionException Throws if description is missing.
+     */
     private static void checkToDo(String[] tokens) throws MissingDescriptionException {
         if (tokens.length <= 1) {
             throw new MissingDescriptionException();
         }
     }
 
+    /**
+     * Checks Event Command to see if description or date is missing.
+     *
+     * @param input Raw user input.
+     * @param tokens User input command split by spaces.
+     * @throws MissingDescriptionException Throws if description is missing.
+     * @throws MissingDateException Throws if date is missing.
+     */
     private static void checkEvent(String input, String[] tokens) throws MissingDescriptionException, MissingDateException {
         if (tokens.length <= 1) {
             throw new MissingDescriptionException();
@@ -171,6 +219,14 @@ public class Parser {
         }
     }
 
+    /**
+     * Checks Deadline Command to see if description or date is missing.
+     *
+     * @param input Raw user input.
+     * @param tokens User input command split by spaces.
+     * @throws MissingDescriptionException Throws if description is missing.
+     * @throws MissingDateException Throws if date is missing.
+     */
     private static void checkDeadline(String input, String[] tokens) throws MissingDescriptionException, MissingDateException {
         if (tokens.length <= 1) {
             throw new MissingDescriptionException();

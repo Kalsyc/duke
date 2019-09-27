@@ -1,7 +1,11 @@
 package kappa.elements;
+
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * An object that stores multiple tags.
+ */
 public class Tags {
 
     private HashSet<String> tagSet;

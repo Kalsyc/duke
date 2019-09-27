@@ -5,6 +5,9 @@ import kappa.exception.InvalidDateException;
 
 import java.time.LocalDateTime;
 
+/**
+ * DateTime class that uses Java LocalDateTime to represent date and time of events and tasks.
+ */
 public class DateTime {
 
     private LocalDateTime localDateTime;
@@ -31,6 +34,13 @@ public class DateTime {
             "am", "am", "am", "am", "pm", "pm", "pm", "pm",
             "pm", "pm", "pm", "pm", "pm", "pm", "pm", "pm"};
 
+    /**
+     * Constructor that creates an immutable LocalDateTime object.
+     *
+     * @param dateFormat Date in the format DD/MM/YYYY.
+     * @param time Time in the format HHMM.
+     * @throws InvalidDateException Throws if date is invalid.
+     */
     public DateTime(String dateFormat, String time) throws InvalidDateException {
         assert time.length() == 4 : "Invalid Time Format";
         assert dateFormat.length() > 5 : "Invalid Date Format";
@@ -43,6 +53,11 @@ public class DateTime {
         this.localDateTime = LocalDateTime.of(this.year, this.month, this.day, this.hour, this.minute);
     }
 
+    /**
+     * Formats the String containing Hour and Minute and parses them to int.
+     *
+     * @param time Time given in HHMM in a String.
+     */
     private void formatHourMinute(String time) {
         String hour = time.substring(0, 2);
         String minute = time.substring(2);
@@ -52,6 +67,11 @@ public class DateTime {
         assert this.minute <= 59 : "Invalid minute";
     }
 
+    /**
+     * Formats the String containing Day, Month and Year and parses them to int.
+     *
+     * @param dateFormat Date given in DD/MM/YYYY in a String.
+     */
     private void formatDayMonthYear(String dateFormat) {
         String[] splitDateTimeTokens = dateFormat.split("/");
 
@@ -63,6 +83,12 @@ public class DateTime {
         assert this.day <= 31 : "Invalid Day";
     }
 
+    /**
+     * Converts the date to a formatted String to print to user.
+     *
+     * @return Formatted String of DateTime.
+     * @throws KappaException Throws if the index for the suffixes are out of bounds.
+     */
     public String convertToString() throws KappaException {
         String result;
         try {

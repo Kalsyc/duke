@@ -55,12 +55,20 @@ public class MainWindow extends AnchorPane {
      * the dialog container. Clears the user input after processing.
      */
     @FXML
-    private void handleUserInput() throws InterruptedException {
+    private void handleUserInput() {
         String input = userInput.getText();
         String response = kappa.getResponse(input);
-        if (input.substring(0,3).equals("bye")){
-            createExitPopup();
-            new ExitProgram();
+        try {
+            if (input.substring(0,3).equals("bye")) {
+                createExitPopup();
+                new ExitProgram();
+            }
+        } catch (IndexOutOfBoundsException error) {
+            dialogContainer.getChildren().addAll(
+                    DialogBox.getUserDialog(input, userImage),
+                    DialogBox.getKappaDialog(response, kappaImage)
+            );
+            userInput.clear();
         }
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(input, userImage),
